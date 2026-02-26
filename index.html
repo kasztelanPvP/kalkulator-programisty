@@ -3,160 +3,180 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kalkulator Programistyczny</title>
+    <title>DevCalc Pro</title>
     <style>
         :root {
-            --bg-color: #121212;
-            --surface: #1e1e1e;
-            --primary: #bb86fc;
-            --text: #ffffff;
-            --text-dim: #a0a0a0;
-            --btn-bg: #2c2c2c;
-            --btn-active: #3c3c3c;
+            --bg-color: #0f111a;
+            --surface: #1a1c2c;
+            --primary: #82aaff;
+            --secondary: #c792ea;
+            --accent: #ff5370;
+            --text: #eeffff;
+            --text-dim: #848bb2;
+            --btn-bg: #292d3e;
+            --btn-op: #3b4261;
         }
+
         body {
             margin: 0;
-            padding: 0;
             background-color: var(--bg-color);
             color: var(--text);
-            font-family: 'Segoe UI', Roboto, Helvetica, sans-serif;
+            font-family: 'Segoe UI', system-ui, sans-serif;
             display: flex;
             flex-direction: column;
             height: 100vh;
+            overflow: hidden;
         }
-        /* Ekrany wyświetlaczy */
+
+        /* Sekcja wyświetlaczy */
         .displays {
-            flex: 1;
             padding: 20px;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-            gap: 15px;
+            background: linear-gradient(to bottom, #1a1c2c, #0f111a);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
+
         .display-row {
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            padding: 10px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background-color 0.2s;
+            padding: 8px 12px;
+            margin: 4px 0;
+            border-radius: 6px;
+            transition: 0.2s;
         }
+
         .display-row.active {
-            background-color: rgba(187, 134, 252, 0.15);
-            border-left: 4px solid var(--primary);
+            background: rgba(130, 170, 255, 0.1);
+            border-right: 3px solid var(--primary);
         }
-        .label {
-            width: 40px;
-            font-weight: bold;
-            color: var(--text-dim);
-            font-size: 14px;
-        }
-        .display-row.active .label {
-            color: var(--primary);
-        }
-        .value {
-            flex: 1;
-            text-align: right;
-            font-size: 24px;
-            font-family: monospace;
-            word-break: break-all;
-        }
-        
-        /* Klawiatura */
-        .keypad {
+
+        .label { font-size: 12px; color: var(--secondary); font-weight: bold; width: 40px; }
+        .value { font-family: 'Consolas', monospace; font-size: 20px; overflow-x: auto; text-align: right; }
+
+        /* Panel operacji logicznych */
+        .logic-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 1px;
-            background-color: #000;
-            padding-bottom: env(safe-area-inset-bottom);
+            gap: 5px;
+            padding: 10px;
+            background: var(--surface);
         }
-        button {
-            background-color: var(--surface);
-            color: var(--text);
+
+        .logic-btn {
+            background: var(--btn-op);
+            color: var(--primary);
+            font-size: 12px;
+            padding: 10px 0;
+            border-radius: 4px;
             border: none;
-            padding: 20px 0;
-            font-size: 20px;
             font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        /* Główna klawiatura */
+        .keypad {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2px;
+            background: #000;
+        }
+
+        button {
+            border: none;
+            background: var(--btn-bg);
+            color: var(--text);
+            font-size: 22px;
             cursor: pointer;
-            transition: background 0.1s;
+            transition: filter 0.1s;
         }
-        button:active {
-            background-color: var(--btn-active);
-        }
-        button:disabled {
-            color: #444;
-            background-color: var(--bg-color);
-        }
-        .action-btn { color: #ff5252; }
+
+        button:active { filter: brightness(1.5); }
+        button:disabled { color: #3e4451; filter: grayscale(1); }
+
+        .op-btn { color: var(--secondary); }
+        .action-btn { color: var(--accent); }
+        
+        .active-op { background: var(--primary) !important; color: white; }
+
+        /* Scrollbar dla wartości BIN */
+        .value::-webkit-scrollbar { height: 2px; }
+        .value::-webkit-scrollbar-thumb { background: var(--primary); }
     </style>
 </head>
 <body>
 
     <div class="displays">
         <div class="display-row" id="row-16" onclick="setBase(16)">
-            <div class="label">HEX</div>
-            <div class="value" id="val-16">0</div>
+            <span class="label">HEX</span>
+            <span class="value" id="val-16">0</span>
         </div>
         <div class="display-row active" id="row-10" onclick="setBase(10)">
-            <div class="label">DEC</div>
-            <div class="value" id="val-10">0</div>
+            <span class="label">DEC</span>
+            <span class="value" id="val-10">0</span>
         </div>
         <div class="display-row" id="row-2" onclick="setBase(2)">
-            <div class="label">BIN</div>
-            <div class="value" id="val-2">0</div>
+            <span class="label">BIN</span>
+            <span class="value" id="val-2">0</span>
         </div>
+    </div>
+
+    <div class="logic-grid">
+        <button class="logic-btn" onclick="setOperation('AND')">AND</button>
+        <button class="logic-btn" onclick="setOperation('OR')">OR</button>
+        <button class="logic-btn" onclick="setOperation('XOR')">XOR</button>
+        <button class="logic-btn" onclick="performNot()">NOT</button>
+        <button class="logic-btn" onclick="setOperation('LSH')">LSH</button>
+        <button class="logic-btn" onclick="setOperation('RSH')">RSH</button>
+        <button class="logic-btn op-btn" onclick="calculate()">=</button>
+        <button class="logic-btn action-btn" onclick="clearAll()">AC</button>
     </div>
 
     <div class="keypad">
         <button onclick="input('A')" class="hex-key">A</button>
         <button onclick="input('B')" class="hex-key">B</button>
-        <button onclick="clearAll()" class="action-btn">AC</button>
+        <button onclick="input('C')" class="hex-key">C</button>
         <button onclick="backspace()" class="action-btn">DEL</button>
 
-        <button onclick="input('C')" class="hex-key">C</button>
         <button onclick="input('D')" class="hex-key">D</button>
-        <button onclick="input('7')" class="dec-key">7</button>
-        <button onclick="input('8')" class="dec-key">8</button>
-        
         <button onclick="input('E')" class="hex-key">E</button>
         <button onclick="input('F')" class="hex-key">F</button>
+        <button onclick="input('7')" class="dec-key">7</button>
+
+        <button onclick="input('8')" class="dec-key">8</button>
+        <button onclick="input('9')" class="dec-key">9</button>
         <button onclick="input('4')" class="dec-key">4</button>
         <button onclick="input('5')" class="dec-key">5</button>
 
-        <button onclick="input('9')" class="dec-key">9</button>
         <button onclick="input('6')" class="dec-key">6</button>
         <button onclick="input('1')" class="bin-key">1</button>
         <button onclick="input('2')" class="dec-key">2</button>
-
         <button onclick="input('3')" class="dec-key">3</button>
-        <button onclick="input('0')" class="bin-key" style="grid-column: span 3;">0</button>
+
+        <button onclick="input('0')" class="bin-key" style="grid-column: span 4;">0</button>
     </div>
 
     <script>
         let currentBase = 10;
         let currentValue = "0";
+        let storedValue = null;
+        let lastOperation = null;
 
         function setBase(base) {
             currentBase = base;
-            
-            // Aktualizacja UI (zaznaczenie aktywnego wiersza)
-            document.querySelectorAll('.display-row').forEach(row => row.classList.remove('active'));
+            document.querySelectorAll('.display-row').forEach(r => r.classList.remove('active'));
             document.getElementById(`row-${base}`).classList.add('active');
             
-            // Pobranie aktualnej wartości w nowej bazie
-            currentValue = document.getElementById(`val-${base}`).innerText;
-            if(currentValue === "0") currentValue = "";
-
+            // Pobieramy aktualny tekst z wyświetlacza danej bazy
+            let valText = document.getElementById(`val-${base}`).innerText;
+            currentValue = valText === "0" ? "" : valText;
+            
             updateKeys();
         }
 
         function updateKeys() {
-            const hexKeys = document.querySelectorAll('.hex-key');
-            const decKeys = document.querySelectorAll('.dec-key');
-            
-            // Wyłącz/włącz klawisze w zależności od bazy
-            hexKeys.forEach(k => k.disabled = (currentBase < 16));
-            decKeys.forEach(k => k.disabled = (currentBase < 10));
+            document.querySelectorAll('.hex-key').forEach(k => k.disabled = currentBase < 16);
+            document.querySelectorAll('.dec-key').forEach(k => k.disabled = currentBase < 10);
         }
 
         function input(char) {
@@ -167,43 +187,71 @@
 
         function clearAll() {
             currentValue = "0";
+            storedValue = null;
+            lastOperation = null;
             updateDisplays();
         }
 
         function backspace() {
-            if (currentValue.length > 1) {
-                currentValue = currentValue.slice(0, -1);
-            } else {
-                currentValue = "0";
+            currentValue = currentValue.length > 1 ? currentValue.slice(0, -1) : "0";
+            updateDisplays();
+        }
+
+        // --- Logika Programistyczna ---
+
+        function getAsBigInt() {
+            try {
+                if (currentBase === 16) return BigInt("0x" + (currentValue || "0"));
+                if (currentBase === 2) return BigInt("0b" + (currentValue || "0"));
+                return BigInt(currentValue || "0");
+            } catch { return 0n; }
+        }
+
+        function setOperation(op) {
+            storedValue = getAsBigInt();
+            lastOperation = op;
+            currentValue = "0";
+            updateDisplays();
+        }
+
+        function performNot() {
+            let val = getAsBigInt();
+            // Przykład dla 64-bit (NOT inverts all bits)
+            let result = BigInt.asUintN(64, ~val);
+            currentValue = result.toString(currentBase).toUpperCase();
+            updateDisplays();
+        }
+
+        function calculate() {
+            if (lastOperation === null || storedValue === null) return;
+            
+            let secondValue = getAsBigInt();
+            let result = 0n;
+
+            switch(lastOperation) {
+                case 'AND': result = storedValue & secondValue; break;
+                case 'OR':  result = storedValue | secondValue; break;
+                case 'XOR': result = storedValue ^ secondValue; break;
+                case 'LSH': result = storedValue << secondValue; break;
+                case 'RSH': result = storedValue >> secondValue; break;
             }
+
+            // Ograniczamy do 64 bitów (jak w prawdziwych procesorach)
+            result = BigInt.asUintN(64, result);
+            currentValue = result.toString(currentBase).toUpperCase();
+            lastOperation = null;
             updateDisplays();
         }
 
         function updateDisplays() {
-            if (currentValue === "") currentValue = "0";
+            let val = getAsBigInt();
             
-            try {
-                // Używamy BigInt, aby uniknąć problemów z precyzją przy dużych liczbach
-                let decimalValue = BigInt("0");
-                
-                if (currentBase === 10) {
-                    decimalValue = BigInt(currentValue);
-                } else if (currentBase === 16) {
-                    decimalValue = BigInt("0x" + currentValue);
-                } else if (currentBase === 2) {
-                    decimalValue = BigInt("0b" + currentValue);
-                }
-
-                // Aktualizacja tekstów na ekranie
-                document.getElementById('val-16').innerText = decimalValue.toString(16).toUpperCase();
-                document.getElementById('val-10').innerText = decimalValue.toString(10);
-                document.getElementById('val-2').innerText = decimalValue.toString(2);
-            } catch (e) {
-                // Zapobieganie błędom przy niepoprawnym parsowaniu
-            }
+            // Formatowanie i wyświetlanie we wszystkich systemach
+            document.getElementById('val-16').innerText = val.toString(16).toUpperCase();
+            document.getElementById('val-10').innerText = val.toString(10);
+            document.getElementById('val-2').innerText = val.toString(2);
         }
 
-        // Inicjalizacja stanu klawiszy na starcie
         updateKeys();
     </script>
 </body>
